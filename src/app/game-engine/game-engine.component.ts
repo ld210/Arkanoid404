@@ -29,7 +29,6 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     }
   }
   @HostListener('document: keyup', ['$event']) relapseControl ($event: KeyboardEvent) {
-    console.log($event);
     if ($event.code === this.controls.left) {
       this.goLeft = false;
     }
@@ -60,7 +59,6 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   }
 
   gameController (key: string): void {
-    console.log(key);
     return {
       [this.controls.start_pause]: () => !this.start ? this.startGame() : this.stopGame(),
       [this.controls.left]: () => this.goLeft = true,
