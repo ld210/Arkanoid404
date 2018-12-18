@@ -1,7 +1,7 @@
-# Arkanoid404
+# Arkanoid404 ![Work In Progress](https://img.shields.io/badge/status-Work%20In%20Progress-blue.svg)
 
 Arkanoid404 is a 404 page in the form of a simple Breakout-like game, written in Typescript with Angular v7
-![Work In Progress](https://img.shields.io/badge/status-Work%20In%20Progress-blue.svg)
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.1.3.
 
 ## Development server
