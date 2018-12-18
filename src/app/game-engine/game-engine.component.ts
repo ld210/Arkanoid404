@@ -82,6 +82,13 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     ge.drawBall(this.context, {x: this.x, y: this.y});
 
     this.vesselX += ge.vesselManager(this.canvas, this.goLeft, this.goRight, this.vesselX, vx);
+
+    // if ball hit bottom then game over
+    if (this.y + this.dy > this.canvas.nativeElement.height - gs.sprites.ball_radius) {
+      this.stopGame();
+      console.log('game over');
+    }
+
     this.dx = ge.collisionManager(this.canvas, 'x', this.x, this.dx);
     this.dy = ge.collisionManager(this.canvas, 'y', this.y, this.dy);
 
