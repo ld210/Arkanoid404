@@ -9,8 +9,13 @@ import { GameSettingsService } from '../settings/game-settings.service';
 })
 export class GameEngineService {
   currentGameSettings: Settings;
+  vesselW: number;
+  vesselH: number;
+
   constructor(private ge: GameSettingsService) {
     this.currentGameSettings = this.ge.getCurrentSettings();
+    this.vesselW = this.currentGameSettings.sprites.vessel_size.w;
+    this.vesselH = this.currentGameSettings.sprites.vessel_size.h;
   }
 
   drawBrick (ctx: CanvasRenderingContext2D, coord: Coordinates): void {
@@ -32,7 +37,7 @@ export class GameEngineService {
 
   drawArkanoidVessel (ctx: CanvasRenderingContext2D, pos: Coordinates): void {
     ctx.beginPath();
-    ctx.rect(pos.x, pos.y, 80, 10);
+    ctx.rect(pos.x, pos.y, this.vesselW, this.vesselH);
     ctx.fillStyle = '#000000';
     ctx.fill();
     ctx.closePath();
@@ -53,5 +58,12 @@ export class GameEngineService {
     const dimensionKey = {x: 'width', y: 'height'}[axis];
 
     return currentAxisValue + stepper > canvas[dimensionKey] - radius || currentAxisValue + stepper < radius ? -stepper : stepper;
+  }
+
+  vesselManager (canvasEl: ElementRef, keyLeft: boolean, keyRight: boolean, vesselX: number, stepper: number) {
+    const canvasW = canvasEl.nativeElement.width;
+    const vesselW = this.currentGameSettings.sprites.vessel_size.w;
+
+    return keyLeft && vesselX > 0 ? -stepper : keyRight && vesselX < canvasW - vesselW ? stepper : 0;
   }
 }

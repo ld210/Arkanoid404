@@ -10,6 +10,9 @@ export const DEFAULT_SETTINGS: Settings = {
     ball_increment_step: {
       dx: 2,
       dy: -2
+    },
+    vessel_increment_step: {
+      vx: 7
     }
   },
   sprites: {

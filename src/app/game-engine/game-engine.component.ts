@@ -14,6 +14,9 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   ballRadius: number;
   start: any = null;
   controls = this.gameSettings.getCurrentSettings().controls;
+  goLeft = false;
+  goRight = false;
+  vesselX: number;
   dx: number;
   dy: number;
   x = 512;
@@ -23,6 +26,14 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     const controlKeys = Object.values(this.controls);
     if (controlKeys.includes($event.code)) {
       this.gameController($event.code);
+    }
+  }
+  @HostListener('document: keyup', ['$event']) relapseControl ($event: KeyboardEvent) {
+    if ($event.code === this.controls.left) {
+      this.goLeft = false;
+    }
+    if ($event.code === this.controls.right) {
+      this.goRight = false;
     }
   }
 
@@ -42,33 +53,35 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   ngAfterViewInit () {
     const canv = this.canvas.nativeElement;
     this.context = canv.getContext('2d');
+    const gs = this.gameSettings.getCurrentSettings();
+    this.vesselX = (gs.frames.frame_size.w - gs.sprites.vessel_size.w) / 2;
     this.drawFrame();
   }
 
   gameController (key: string): void {
-    console.log(key);
     return {
-      [this.controls.start_pause]: () => !this.start ? this.startGame() : this.stopGame()
+      [this.controls.start_pause]: () => !this.start ? this.startGame() : this.stopGame(),
+      [this.controls.left]: () => this.goLeft = true,
+      [this.controls.right]: () => this.goRight = true,
+      [this.controls.menu]: () => console.log('go to game menu')
     }[key]();
   }
 
   drawFrame (): void {
     const ge = this.gameEngine;
     const gs = this.gameSettings.getCurrentSettings();
-
-    const canvas = this.canvas.nativeElement;
-    const vesselW = gs.sprites.vessel_size.w;
-    const canvasW = gs.frames.frame_size.w;
+    const vx = gs.frames.vessel_increment_step.vx;
 
     ge.clearFrame(this.context);
     ge.drawLevel(this.context, {
       bricks: [
         {x: 20, y: 50}, {x: 70, y: 50}
       ],
-      arkanoid: {x: (canvasW - vesselW) / 2, y: 700}
+      arkanoid: {x: this.vesselX, y: 700}
     });
     ge.drawBall(this.context, {x: this.x, y: this.y});
 
+    this.vesselX += ge.vesselManager(this.canvas, this.goLeft, this.goRight, this.vesselX, vx);
     this.dx = ge.collisionManager(this.canvas, 'x', this.x, this.dx);
     this.dy = ge.collisionManager(this.canvas, 'y', this.y, this.dy);
 
@@ -83,6 +96,13 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     this.x = 512;
     this.y = 695;
     this.gameEngine.drawBall(this.context, {x: this.x, y: this.y});
+  }
+
+  vesselControl (): number {
+    const vx = this.gameSettings.getCurrentSettings().frames.vessel_increment_step.vx;
+    return this.goLeft ? this.vesselX - vx :
+          this.goRight ? this.vesselX + vx
+                       : this.vesselX;
   }
 
   startGame (): void {
