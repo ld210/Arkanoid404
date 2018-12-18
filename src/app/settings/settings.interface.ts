@@ -8,6 +8,9 @@ export interface Settings {
     ball_increment_step: {
       dx: number,
       dy: number
+    },
+    vessel_increment_step: {
+      vx: number
     }
   };
   sprites: {
