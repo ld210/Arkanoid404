@@ -6,7 +6,7 @@ export const DEFAULT_SETTINGS: Settings = {
       w: 1024,
       h: 720
     },
-    frame_delay: 1,
+    frame_delay: 10,
     ball_increment_step: {
       dx: 2,
       dy: -2
