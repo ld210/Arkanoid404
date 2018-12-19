@@ -52,11 +52,11 @@ export class GameEngineService {
     ctx.clearRect(0, 0, 1024, 720);
   }
 
-  xAxisCollisionManager (canvasEl: ElementRef, xAxisValue: number, stepper: number): number {
-    const canvas = canvasEl.nativeElement;
+  xAxisCollisionManager (xAxisValue: number, stepper: number): number {
+    const frameW = this.currentGameSettings.frames.frame_size.w;
     const radius = this.currentGameSettings.sprites.ball_radius;
 
-    return xAxisValue + stepper > canvas.width - radius || xAxisValue + stepper < radius ? -stepper : stepper;
+    return xAxisValue + stepper > frameW - radius || xAxisValue + stepper < radius ? -stepper : stepper;
   }
 
   yAxisCollisionManager (yAxisValue: number, stepper: number, xAxisValue: number, paddleX: number): number {
