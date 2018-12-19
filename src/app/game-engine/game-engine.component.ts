@@ -1,6 +1,9 @@
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, HostListener } from '@angular/core';
 import { GameEngineService } from './game-engine.service';
 import { GameSettingsService } from '../settings/game-settings.service';
+import { Coordinates } from '../levels/coordinates.interface';
+import { LevelStoreService } from '../levels/level.store.service';
+import { level404 } from '../levels/level404.constant';
 
 @Component({
   selector: 'app-game-engine',
@@ -11,6 +14,7 @@ import { GameSettingsService } from '../settings/game-settings.service';
 export class GameEngineComponent implements OnInit, AfterViewInit {
   @ViewChild('arkanoidCanvas') canvas: ElementRef;
   context: CanvasRenderingContext2D;
+  level: Coordinates[];
   ballRadius: number;
   start: any = null;
   controls = this.gameSettings.getCurrentSettings().controls;
@@ -39,7 +43,8 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
 
   constructor(
     private gameEngine: GameEngineService,
-    private gameSettings: GameSettingsService
+    private gameSettings: GameSettingsService,
+    private levelStore: LevelStoreService
   ) {
     const gs = gameSettings.getCurrentSettings();
     this.dx = gs.frames.ball_increment_step.dx;
@@ -48,6 +53,7 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.levelStore.setActiveLevel(level404);
   }
 
   ngAfterViewInit () {
@@ -55,7 +61,11 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     this.context = canv.getContext('2d');
     const gs = this.gameSettings.getCurrentSettings();
     this.vesselX = (gs.frames.frame_size.w - gs.sprites.vessel_size.w) / 2;
-    this.drawFrame();
+
+    this.levelStore.activeLevel.subscribe((level: Coordinates[]) => {
+      this.level = level;
+      this.drawFrame();
+    });
   }
 
   gameController (key: string): void {
@@ -74,9 +84,7 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
 
     ge.clearFrame(this.context);
     ge.drawLevel(this.context, {
-      bricks: [
-        {x: 20, y: 50}, {x: 70, y: 50}
-      ],
+      bricks: this.level,
       arkanoid: {x: this.vesselX, y: 700}
     });
     ge.drawBall(this.context, {x: this.x, y: this.y});

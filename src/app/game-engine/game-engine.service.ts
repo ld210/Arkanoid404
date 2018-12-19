@@ -19,10 +19,15 @@ export class GameEngineService {
   }
 
   drawBrick (ctx: CanvasRenderingContext2D, coord: Coordinates): void {
+    const brickW = this.currentGameSettings.sprites.brick_size.w;
+    const brickH = this.currentGameSettings.sprites.brick_size.h;
+
     ctx.beginPath();
-    ctx.rect(coord.x, coord.y, 50, 50);
+    ctx.rect(coord.x, coord.y, brickW, brickH);
     ctx.fillStyle = '#FF0000';
+    ctx.strokeStyle = '#ffffff';
     ctx.fill();
+    ctx.stroke();
     ctx.closePath();
   }
 
