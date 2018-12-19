@@ -89,8 +89,8 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
       console.log('game over');
     }
 
-    this.dx = ge.collisionManager(this.canvas, 'x', this.x, this.dx);
-    this.dy = ge.collisionManager(this.canvas, 'y', this.y, this.dy);
+    this.dx = ge.xAxisCollisionManager(this.canvas, this.x, this.dx);
+    this.dy = ge.yAxisCollisionManager(this.y, this.dy, this.x, this.vesselX);
 
     this.x += this.dx;
     this.y += this.dy;

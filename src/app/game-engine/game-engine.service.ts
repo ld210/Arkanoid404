@@ -52,12 +52,29 @@ export class GameEngineService {
     ctx.clearRect(0, 0, 1024, 720);
   }
 
-  collisionManager (canvasEl: ElementRef, axis: string, currentAxisValue: number, stepper: number): number {
+  xAxisCollisionManager (canvasEl: ElementRef, xAxisValue: number, stepper: number): number {
     const canvas = canvasEl.nativeElement;
     const radius = this.currentGameSettings.sprites.ball_radius;
-    const dimensionKey = {x: 'width', y: 'height'}[axis];
 
-    return currentAxisValue + stepper > canvas[dimensionKey] - radius || currentAxisValue + stepper < radius ? -stepper : stepper;
+    return xAxisValue + stepper > canvas.width - radius || xAxisValue + stepper < radius ? -stepper : stepper;
+  }
+
+  yAxisCollisionManager (yAxisValue: number, stepper: number, xAxisValue: number, paddleX: number): number {
+    const paddleW = this.currentGameSettings.sprites.vessel_size.w;
+    const paddleY = this.currentGameSettings.sprites.vessel_size.y_axis;
+    const radius = this.currentGameSettings.sprites.ball_radius;
+
+    if (yAxisValue + stepper < radius) {
+      return -stepper;
+    } else if (yAxisValue >= paddleY - radius) {// ball arrives at vessel yAxis level
+      if (xAxisValue > paddleX && xAxisValue < paddleX + paddleW) { // if ball touches the paddle
+        return -stepper;
+      } else {
+        return stepper;
+      }
+    } else {
+      return stepper;
+    }
   }
 
   vesselManager (canvasEl: ElementRef, keyLeft: boolean, keyRight: boolean, vesselX: number, stepper: number) {

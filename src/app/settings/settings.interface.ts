@@ -21,7 +21,8 @@ export interface Settings {
     },
     vessel_size: {
       w: number,
-      h: number
+      h: number,
+      y_axis: number
     }
   };
   controls: {
