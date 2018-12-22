@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
       dy: -2
     },
     vessel_increment_step: {
-      vx: 2
+      vx: 5
     }
   },
   sprites: {

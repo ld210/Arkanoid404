@@ -15,8 +15,10 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   @ViewChild('arkanoidCanvas') canvas: ElementRef;
   context: CanvasRenderingContext2D;
   level: Coordinates[];
+  brickToDestroy: Coordinates = null;
   ballRadius: number;
   start: any = null;
+  life: number;
   controls = this.gameSettings.getCurrentSettings().controls;
   goLeft = false;
   goRight = false;
@@ -49,23 +51,31 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     const gs = gameSettings.getCurrentSettings();
     this.dx = gs.frames.ball_increment_step.dx;
     this.dy = gs.frames.ball_increment_step.dy;
+    this.life = 3;
     this.ballRadius = gs.sprites.ball_radius;
+    this.levelStore.setActiveLevel(level404);
   }
 
   ngOnInit() {
-    this.levelStore.setActiveLevel(level404);
+    // this.levelStore.setActiveLevel(level404);
+    this.levelStore.activeLevel.subscribe((level: Coordinates[]) => this.level = level);
+    this.levelStore.activeBrick.subscribe((brick: Coordinates) => this.brickToDestroy = brick);
   }
 
   ngAfterViewInit () {
     const canv = this.canvas.nativeElement;
     this.context = canv.getContext('2d');
-    const gs = this.gameSettings.getCurrentSettings();
-    this.vesselX = (gs.frames.frame_size.w - gs.sprites.vessel_size.w) / 2;
+    this.initPositions();
+    this.drawFrame();
+  }
 
-    this.levelStore.activeLevel.subscribe((level: Coordinates[]) => {
-      this.level = level;
-      this.drawFrame();
-    });
+  initPositions (): void {
+    const gs = this.gameSettings.getCurrentSettings();
+    this.dx = gs.frames.ball_increment_step.dx;
+    this.dy = gs.frames.ball_increment_step.dy;
+    this.vesselX = (gs.frames.frame_size.w - gs.sprites.vessel_size.w) / 2;
+    this.x = 512;
+    this.y = 690;
   }
 
   gameController (key: string): void {
@@ -83,6 +93,10 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     const vx = gs.frames.vessel_increment_step.vx;
 
     ge.clearFrame(this.context);
+    if (this.brickToDestroy) {
+      ge.removeBrick(this.level, this.brickToDestroy);
+      this.brickToDestroy = null;
+    }
     ge.drawLevel(this.context, {
       bricks: this.level,
       arkanoid: {x: this.vesselX, y: 700}
@@ -94,10 +108,11 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     // if ball hit bottom then game over
     if (this.y + this.dy > this.canvas.nativeElement.height - gs.sprites.ball_radius) {
       this.stopGame();
-      console.log('game over');
+      this.life -= 1;
+      this.life > 0 ? this.restart() : this.gameOver();
     }
 
-    this.dx = ge.xAxisCollisionManager(this.x, this.dx, this.y, this.level);
+    this.dx = ge.xAxisCollisionManager(this.x, this.dx, this.y, this.vesselX, this.level);
     this.dy = ge.yAxisCollisionManager(this.y, this.dy, this.x, this.vesselX, this.level);
 
     this.x += this.dx;
@@ -130,5 +145,18 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   stopGame (): void {
     clearInterval(this.start);
     this.start = null;
+  }
+
+  restart () {
+    this.initPositions();
+    this.drawFrame();
+  }
+
+  gameOver () {
+    const ctx = this.canvas.nativeElement.getContext('2d');
+    this.gameEngine.clearFrame(ctx);
+    ctx.font = '120px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', 500, 200 , 1024);
   }
 }
