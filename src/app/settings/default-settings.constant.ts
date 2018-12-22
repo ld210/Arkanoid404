@@ -6,13 +6,13 @@ export const DEFAULT_SETTINGS: Settings = {
       w: 1024,
       h: 720
     },
-    frame_delay: 5,
+    frame_delay: 10,
     ball_increment_step: {
       dx: 2,
       dy: -2
     },
     vessel_increment_step: {
-      vx: 7
+      vx: 5
     }
   },
   sprites: {
@@ -23,7 +23,8 @@ export const DEFAULT_SETTINGS: Settings = {
     },
     vessel_size: {
       w: 80,
-      h: 10
+      h: 10,
+      y_axis: 700
     }
   },
   controls: {
