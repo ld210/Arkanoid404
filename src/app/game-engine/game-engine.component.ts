@@ -15,6 +15,7 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
   @ViewChild('arkanoidCanvas') canvas: ElementRef;
   context: CanvasRenderingContext2D;
   level: Coordinates[];
+  brickToDestroy: Coordinates = null;
   ballRadius: number;
   start: any = null;
   controls = this.gameSettings.getCurrentSettings().controls;
@@ -50,10 +51,13 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     this.dx = gs.frames.ball_increment_step.dx;
     this.dy = gs.frames.ball_increment_step.dy;
     this.ballRadius = gs.sprites.ball_radius;
+    this.levelStore.setActiveLevel(level404);
   }
 
   ngOnInit() {
-    this.levelStore.setActiveLevel(level404);
+    // this.levelStore.setActiveLevel(level404);
+    this.levelStore.activeLevel.subscribe((level: Coordinates[]) => this.level = level);
+    this.levelStore.activeBrick.subscribe((brick: Coordinates) => this.brickToDestroy = brick);
   }
 
   ngAfterViewInit () {
@@ -61,11 +65,7 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     this.context = canv.getContext('2d');
     const gs = this.gameSettings.getCurrentSettings();
     this.vesselX = (gs.frames.frame_size.w - gs.sprites.vessel_size.w) / 2;
-
-    this.levelStore.activeLevel.subscribe((level: Coordinates[]) => {
-      this.level = level;
-      this.drawFrame();
-    });
+    this.drawFrame();
   }
 
   gameController (key: string): void {
@@ -83,6 +83,10 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
     const vx = gs.frames.vessel_increment_step.vx;
 
     ge.clearFrame(this.context);
+    if (this.brickToDestroy) {
+      ge.removeBrick(this.level, this.brickToDestroy);
+      this.brickToDestroy = null;
+    }
     ge.drawLevel(this.context, {
       bricks: this.level,
       arkanoid: {x: this.vesselX, y: 700}
@@ -97,7 +101,7 @@ export class GameEngineComponent implements OnInit, AfterViewInit {
       console.log('game over');
     }
 
-    this.dx = ge.xAxisCollisionManager(this.x, this.dx, this.y, this.level);
+    this.dx = ge.xAxisCollisionManager(this.x, this.dx, this.y, this.vesselX, this.level);
     this.dy = ge.yAxisCollisionManager(this.y, this.dy, this.x, this.vesselX, this.level);
 
     this.x += this.dx;

@@ -60,16 +60,24 @@ export class GameEngineService {
     ctx.clearRect(0, 0, 1024, 720);
   }
 
-  xAxisCollisionManager (xAxisValue: number, stepper: number, yAxisValue: number, level: Coordinates[]): number {
+  xAxisCollisionManager (xAxisValue: number, stepper: number, yAxisValue: number, paddleX: number, level: Coordinates[]): number {
     const frameW = this.currentGameSettings.frames.frame_size.w;
+    const paddleW = this.currentGameSettings.sprites.vessel_size.w;
+
+    // Vessel collisiono detection
+    if (this.hitPaddle(xAxisValue, yAxisValue, paddleX)) {
+      return xAxisValue <= paddleX + paddleW && xAxisValue > paddleX + ((paddleW / 3) * 2) ? 3 :
+                             xAxisValue >= paddleX && xAxisValue < paddleX + (paddleW / 3) ? -3
+                                                                                           : 2;
+    }
 
     // Brick collision detection
     const brick = this.hitBrick(xAxisValue, yAxisValue, level);
     if (brick) {
-      if (yAxisValue + this.radius > brick.y && yAxisValue + this.radius < brick.y + this.brickH) {
+      if (yAxisValue + this.radius >= brick.y && yAxisValue + this.radius <= brick.y + this.brickH) {
+        this.levelStore.setActiveBrick(brick);
         return -stepper;
       }
-      return -stepper;
     }
     // Wall collision detection
     return xAxisValue + stepper > frameW - this.radius || xAxisValue + stepper < this.radius ? -stepper : stepper;
@@ -83,7 +91,8 @@ export class GameEngineService {
     // Brick collision detection
     const brick = this.hitBrick(xAxisValue, yAxisValue, level);
     if (brick) {
-      if (xAxisValue + this.radius > brick.x && xAxisValue + this.radius < brick.x + this.brickW) {
+      if (xAxisValue + this.radius >= brick.x && xAxisValue + this.radius <= brick.x + this.brickW) {
+        this.levelStore.setActiveBrick(brick);
         return -stepper;
       }
     }
@@ -97,18 +106,18 @@ export class GameEngineService {
 
   hitBrick (ballX: number, ballY: number, level: Coordinates[]): Coordinates {
     return level.find(brick => {
-      return ballX > brick.x && ballX < brick.x + this.brickW && ballY > brick.y && ballY < brick.y + this.brickH;
+      return (ballX > brick.x && ballX < brick.x + this.brickW) && (ballY > brick.y && ballY < brick.y + this.brickH);
     });
+  }
+
+  removeBrick (level: Coordinates[], brick: Coordinates): void {
+    const updatedLevel = level.filter((b: Coordinates) => b !== brick);
+    this.levelStore.setActiveLevel(updatedLevel);
   }
 
   hitPaddle (ballX: number, ballY: number, paddleX: number): boolean {
     const paddleY = this.currentGameSettings.sprites.vessel_size.y_axis;
     return ballY >= paddleY - this.radius && ballX > paddleX && ballX < paddleX + this.vesselW;
-  }
-
-  removeBrick (level: Coordinates[], index: number): void {
-    const updatedLevel = level.splice(index, 1);
-    this.levelStore.setActiveLevel(updatedLevel);
   }
 
   vesselManager (canvasEl: ElementRef, keyLeft: boolean, keyRight: boolean, vesselX: number, stepper: number) {
